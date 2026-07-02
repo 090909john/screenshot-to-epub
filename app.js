@@ -7,7 +7,7 @@ const $ = (id) => document.getElementById(id);
 const els = {
   modeImage: $("modeImage"), modeText: $("modeText"), ocrCard: $("ocrCard"),
   uploadBtn: $("uploadBtn"), fileInput: $("fileInput"), coverInput: $("coverInput"),
-  thumbGrid: $("thumbGrid"), emptyHint: $("emptyHint"), itemCount: $("itemCount"),
+  thumbGrid: $("thumbGrid"), emptyHint: $("emptyHint"), itemCount: $("itemCount"), clearAll: $("clearAll"),
   bookTitle: $("bookTitle"), bookAuthor: $("bookAuthor"),
   coverChip: $("coverChip"), coverLabel: $("coverLabel"), coverBtn: $("coverBtn"),
   ocrLang: $("ocrLang"), proofToggle: $("proofToggle"), chapToggle: $("chapToggle"),
@@ -154,6 +154,7 @@ function renderItems() {
   els.thumbGrid.hidden = n === 0;
   els.emptyHint.hidden = n > 0;
   els.itemCount.textContent = n;
+  els.clearAll.hidden = n === 0;
   updateBar();
   updateCoverChip();
 }
@@ -181,6 +182,13 @@ function removeItem(i) {
   backToIdle();
   renderItems();
 }
+
+els.clearAll.addEventListener("click", () => {
+  state.items.forEach((it) => URL.revokeObjectURL(it.url));
+  state.items = [];
+  backToIdle();
+  renderItems();
+});
 
 // ---------- 書籍資訊、封面 ----------
 
