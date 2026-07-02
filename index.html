@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>頁冊 Pagebound — 把截圖裝訂成電子書</title>
+<meta name="description" content="把散落的截圖裝訂成一本 EPUB 電子書。在瀏覽器本機處理,不上傳雲端。" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="style.css" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%23B15A34'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='19' fill='%23FBF6EC' text-anchor='middle'%3E冊%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+<div class="page">
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">冊</div>
+      <div>
+        <div class="brand-title">頁冊 <span>Pagebound</span></div>
+        <div class="brand-sub">把散落的截圖,裝訂成一本電子書</div>
+      </div>
+    </div>
+    <div class="privacy"><span class="dot"></span>在瀏覽器本機處理 · 不上傳雲端</div>
+  </header>
+
+  <div class="columns">
+
+    <!-- LEFT: mode + upload + thumbnails -->
+    <main class="col-main">
+
+      <section class="card">
+        <div class="eyebrow">轉換模式</div>
+        <div class="mode-grid">
+          <button type="button" id="modeImage" class="mode-card active">
+            <div class="mode-head"><span class="mode-emoji">🖼️</span><span class="mode-name">圖片頁面</span></div>
+            <div class="mode-desc">每張截圖原樣成為一頁,適合漫畫、圖表、手寫筆記。</div>
+          </button>
+          <button type="button" id="modeText" class="mode-card">
+            <div class="mode-head"><span class="mode-emoji">🔤</span><span class="mode-name">OCR 文字</span></div>
+            <div class="mode-desc">辨識截圖中的文字,輸出可重排、可搜尋的文字書。</div>
+          </button>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div class="card-title">截圖素材</div>
+          <div class="card-hint">共 <span id="itemCount">0</span> 張 · 拖曳可調整順序</div>
+        </div>
+
+        <button type="button" id="uploadBtn" class="upload">
+          <span class="upload-icon">⬆</span>
+          <span class="upload-main"><span class="upload-accent">選擇截圖</span> 或拖放到這裡</span>
+          <span class="upload-sub">支援 PNG · JPG · WebP,可一次多張</span>
+        </button>
+        <input type="file" id="fileInput" accept="image/*" multiple hidden />
+        <input type="file" id="coverInput" accept="image/*" hidden />
+
+        <div id="thumbGrid" class="thumb-grid" hidden></div>
+        <div id="emptyHint" class="empty-hint">還沒有截圖 — 上傳後會像卡片一樣排在這裡,可拖動排序。</div>
+      </section>
+
+    </main>
+
+    <!-- RIGHT: settings -->
+    <aside class="col-side">
+
+      <section class="card">
+        <div class="side-title">書籍資訊</div>
+
+        <label class="lbl" for="bookTitle">書名</label>
+        <input id="bookTitle" class="txt" type="text" placeholder="例如:期末文獻整理" maxlength="200" />
+
+        <label class="lbl" for="bookAuthor">作者</label>
+        <input id="bookAuthor" class="txt" type="text" placeholder="你的名字" maxlength="120" />
+
+        <label class="lbl">封面</label>
+        <div class="cover-row">
+          <div class="cover-chip" id="coverChip"><span id="coverLabel">未命名書冊</span></div>
+          <button type="button" id="coverBtn" class="cover-pick">用第一張截圖<br />或自訂封面</button>
+        </div>
+      </section>
+
+      <section class="card" id="ocrCard" hidden>
+        <div class="side-title">文字辨識</div>
+        <label class="lbl" for="ocrLang">辨識語言</label>
+        <select id="ocrLang" class="txt">
+          <option value="zh-TW" selected>繁體中文</option>
+          <option value="zh-CN">簡體中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
+          <option value="mix">中英混合</option>
+        </select>
+        <button type="button" id="proofToggle" class="toggle-row" aria-pressed="true">
+          <div class="toggle-text">
+            <div class="toggle-name">辨識後開啟校對</div>
+            <div class="toggle-desc">轉換前逐頁檢查文字</div>
+          </div>
+          <span class="knob-track on"><span class="knob-dot"></span></span>
+        </button>
+      </section>
+
+      <section class="card">
+        <button type="button" id="chapToggle" class="toggle-row" aria-pressed="true">
+          <div class="toggle-text">
+            <div class="toggle-name">依截圖分章節</div>
+            <div class="toggle-desc">每張截圖成為獨立章節與目錄項</div>
+          </div>
+          <span class="knob-track on"><span class="knob-dot"></span></span>
+        </button>
+      </section>
+
+    </aside>
+  </div>
+</div>
+
+<!-- Persistent action bar -->
+<div class="actionbar">
+  <div class="actionbar-inner">
+    <div id="barIdle" class="bar-state active">
+      <div class="bar-info">《<b id="barTitle">未命名書冊</b>》 · <b id="barCount">0</b> 張截圖 · <span id="barMode">圖片直排</span></div>
+      <button type="button" id="convertBtn" class="bar-btn" disabled>產生 EPUB</button>
+    </div>
+    <div id="barConverting" class="bar-state">
+      <div class="bar-progress-label">正在裝訂… <span id="barPct">0%</span></div>
+      <div class="bar-track"><div id="barFill" class="bar-fill"></div></div>
+      <div class="bar-stage" id="barStage"></div>
+    </div>
+    <div id="barDone" class="bar-state">
+      <div class="bar-done-info">
+        <span class="bar-check">✓</span>
+        <span class="bar-info">《<b id="doneTitle">未命名書冊</b>》 · <span id="doneCount">0</span> 頁 · 裝訂完成</span>
+      </div>
+      <button type="button" id="resetBtn" class="bar-reset">重新設定</button>
+      <button type="button" id="openBookBtn" class="bar-ghost">預覽</button>
+      <button type="button" id="downloadBtn" class="bar-btn">下載 .epub</button>
+    </div>
+  </div>
+</div>
+
+<!-- Image preview modal -->
+<div id="previewModal" class="overlay" hidden>
+  <div class="preview-panel">
+    <img id="previewImg" alt="" />
+    <div class="preview-caption"><span id="previewName"></span> · 點任意處關閉</div>
+  </div>
+</div>
+
+<!-- Book reader preview modal -->
+<div id="readerModal" class="overlay" hidden>
+  <div class="reader-panel">
+    <div class="reader-head">
+      <span id="readerTitle" class="reader-title">未命名書冊</span>
+      <button type="button" id="readerClose" class="reader-close">✕</button>
+    </div>
+    <div class="reader-body" id="readerBody"></div>
+  </div>
+</div>
+
+<!-- OCR proofread modal -->
+<div id="proofModal" class="overlay" hidden>
+  <div class="reader-panel">
+    <div class="reader-head">
+      <span class="reader-title">校對辨識結果</span>
+      <button type="button" id="proofCancel" class="reader-close">✕</button>
+    </div>
+    <div class="reader-body" id="proofBody"></div>
+    <div class="proof-foot">
+      <button type="button" id="proofCancel2" class="bar-reset">取消</button>
+      <button type="button" id="proofConfirm" class="bar-btn">完成校對,繼續裝訂</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
